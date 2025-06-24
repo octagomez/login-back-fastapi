@@ -11,6 +11,7 @@ services:
       - db
     environment:
       DATABASE_URL: mysql+pymysql://user:password@db:3306/mydb
+    command: ["/wait-for-it.sh", "db:3306", "--", "uvicorn", "app:app", "--host", "0.0.0.0", "--reload"]
 
   db:
     image: mariadb:10.5

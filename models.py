@@ -6,6 +6,7 @@ class Task(SQLModel, table=True):
     title: str
     description: Optional[str] = None
     user_id: int = Field(foreign_key="user.id")
+    user: Optional["User"] = Relationship(back_populates="tasks")  # <--- ESTA LÍNEA
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
