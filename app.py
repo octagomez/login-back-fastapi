@@ -32,3 +32,10 @@ def create_task(task: Task, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(task)
     return task
+
+@app.get("/tasks/{task_id}/user")
+def get_task_user(task_id: int, session: Session = Depends(get_session)):
+    task = session.get(Task, task_id)
+    if not task:
+        return {"error": "Tarea no encontrada"}
+    return task.user
