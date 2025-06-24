@@ -1,0 +1,7 @@
+fastapi
+sqlmodel
+pydantic
+uvicorn
+python-dotenv
+typing
+
