@@ -5,4 +5,5 @@ pydantic
 uvicorn
 python-dotenv
 typing
+python-jose
 

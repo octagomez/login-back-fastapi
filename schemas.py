@@ -12,3 +12,8 @@ class UserRead(BaseModel):
     email: str
     tasks: List[TaskRead]
 
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+
