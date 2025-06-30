@@ -3,7 +3,10 @@ from sqlmodel import SQLModel
 from database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from apis import router as api_router
-from models import User, Task, UserTaskLink, Cliente
+from apisclients import router_clients
+from apisproducts import router_products
+from models import User, Task, UserTaskLink 
+from clients import Client
 
 app = FastAPI()
 
@@ -18,6 +21,8 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+app.include_router(router_clients)
+app.include_router(router_products)
 
 @app.on_event("startup")
 def init_db():
