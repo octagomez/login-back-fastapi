@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 
 class Product(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     descripcion: Optional[str] = None
     categoria: Optional[str] = None

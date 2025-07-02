@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import select, Session
+from sqlmodel import select, Session, Field, Relationship
 from products import Product
 from database import get_session
 from pydantic import BaseModel
@@ -13,18 +13,27 @@ router_products = APIRouter()
 
 class ProductCreate(BaseModel):
     nombre: str
-    email: str
-    telefono: Optional[str] = None
-    direccion: Optional[str] = None
-    empresa: Optional[str] = None
+    descripcion: Optional[str] = None
+    categoria: Optional[str] = None
+    subcategoria: Optional[str] = None
+    marca: Optional[str] = None
+    modelo: Optional[str] = None
+    precio: Optional[float] = None
+    activo: bool = Field(default=True)
+    fecha_creacion: Optional[str] = None
+    fecha_actualizacion: Optional[str] = None
 
 class ProductUpdate(BaseModel):
-    nombre: Optional[str] = None
-    email: Optional[str] = None
-    telefono: Optional[str] = None
-    direccion: Optional[str] = None
-    empresa: Optional[str] = None
-    activo: Optional[bool] = None
+    nombre: str
+    descripcion: Optional[str] = None
+    categoria: Optional[str] = None
+    subcategoria: Optional[str] = None
+    marca: Optional[str] = None
+    modelo: Optional[str] = None
+    precio: Optional[float] = None
+    activo: bool = Field(default=True)
+    fecha_creacion: Optional[str] = None
+    fecha_actualizacion: Optional[str] = None
 
 @router_products.get("/health")
 def health_check(session: Session = Depends(get_session)):
@@ -35,15 +44,21 @@ def health_check(session: Session = Depends(get_session)):
         return {"status": "unhealthy", "message": f"Error en base de datos: {str(e)}", "tabla_Products": "no existe"}
 
 @router_products.post("/products", response_model=Product)
-def create_Product(Product: ProductCreate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    print(f"Datos recibidos: {Product}")
-    existing_Product = session.exec(select(Product).where(Product.email == Product.email)).first()
+def create_Product(product_data: ProductCreate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    print(f"Datos recibidos: {product_data}")
+    existing_Product = session.exec(select(Product).where(Product.nombre == product_data.nombre)).first()
     if existing_Product:
         raise HTTPException(status_code=400, detail="Ya existe un Product con ese email")
     try:
         db_Product = Product(
-            nombre=Product.nombre,
-
+            nombre=product_data.nombre,
+            descripcion=product_data.descripcion,
+            categoria= product_data.categoria,
+            subcategoria=product_data.subcategoria,
+            marca=product_data.marca,
+            modelo=product_data.modelo,
+            precio=product_data.precio,
+            activo=product_data.activo,
             fecha_creacion=datetime.now().isoformat(),
             fecha_actualizacion=datetime.now().isoformat()
         )
@@ -69,30 +84,30 @@ def get_Product(Product_id: int, session: Session = Depends(get_session), curren
         raise HTTPException(status_code=404, detail="Product no encontrado")
     return Product
 
-@router_products.put("/products/{Product_id}", response_model=Product)
-def update_Product(Product_id: int, Product_update: ProductUpdate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    Product = session.get(Product, Product_id)
-    if not Product:
+@router_products.put("/products/{product_id}", response_model=Product)
+def update_product(product_id: int, product_update: ProductUpdate, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    product_db = session.get(Product, product_id)
+    if not product_db:
         raise HTTPException(status_code=404, detail="Product no encontrado")
-    if Product_update.email and Product_update.email != Product.email:
-        existing_Product = session.exec(select(Product).where(Product.email == Product_update.email)).first()
+    if product_update.nombre and product_update.nombre != product_db.nombre:
+        existing_Product = session.exec(select(Product).where(Product.nombre == product_update.nombre)).first()
         if existing_Product:
-            raise HTTPException(status_code=400, detail="Ya existe un Product con ese email")
-    update_data = Product_update.dict(exclude_unset=True)
+            raise HTTPException(status_code=400, detail="Ya existe un Product con ese nombre")
+    update_data = product_update.dict(exclude_unset=True)
     update_data["fecha_actualizacion"] = datetime.now().isoformat()
     for field, value in update_data.items():
-        setattr(Product, field, value)
-    session.add(Product)
+        setattr(product_db, field, value)
+    session.add(product_db)
     session.commit()
-    session.refresh(Product)
-    return Product
+    session.refresh(product_db)
+    return product_db
 
 @router_products.delete("/products/{Product_id}")
 def delete_Product(Product_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    Product = session.get(Product, Product_id)
-    if not Product:
+    product_db = session.get(Product, Product_id)
+    if not product_db:
         raise HTTPException(status_code=404, detail="Product no encontrado")
-    session.delete(Product)
+    session.delete(product_db)
     session.commit()
     return {"message": "Product eliminado exitosamente"}
 
