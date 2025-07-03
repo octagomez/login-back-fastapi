@@ -18,5 +18,6 @@ class User(SQLModel, table=True):
     password: str  # Campo para la contraseña
     tasks: List["Task"] = Relationship(back_populates="users", link_model=UserTaskLink)
 
+
 Task.update_forward_refs()
 UserTaskLink.update_forward_refs()
