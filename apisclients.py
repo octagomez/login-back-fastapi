@@ -108,10 +108,10 @@ def get_Client(Client_id: int, session: Session = Depends(get_session), current_
 
 @router_clients.delete("/clients/{Client_id}")
 def delete_Client(Client_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
-    Client = session.get(Client, Client_id)
-    if not Client:
+    client_db = session.get(Client, Client_id)
+    if not client_db:
         raise HTTPException(status_code=404, detail="Client no encontrado")
-    session.delete(Client)
+    session.delete(client_db)
     session.commit()
     return {"message": "Client eliminado exitosamente"}
 
